@@ -58,7 +58,7 @@ Public Class Form1
         If tokenj.Contains("Invalid login") Then
             MsgBox("Wrong username or password", MsgBoxStyle.Critical)
             Exit Sub
-        ElseIf tokenj.Contains("Web services must be enabled in Advanced features.") Then
+        ElseIf tokenj.Contains("Web services must be enabled in Advanced features.") Or tokenj = " " Or tokenj = "" Then
             MsgBox("This method was disabled by your elearning website admin", MsgBoxStyle.Critical)
             Exit Sub
         End If
@@ -66,13 +66,14 @@ Public Class Form1
         Dim tokenjp = JObject.Parse(tokenj)
         Dim token As JToken = tokenjp("token")
 
+
         'Get user id
         Dim infoj As String = DoPost(TextBox1.Text & "/webservice/rest/server.php?moodlewsrestformat=json", "wstoken=" & token.ToString & "&wsfunction=core_webservice_get_site_info")
         Dim infojp = JObject.Parse(infoj)
         Dim userid As JToken = infojp("userid")
 
         'Get user courses
-        Dim coursesj As String = DoPost(TextBox1.Text & "/webservice/rest/server.php?moodlewsrestformat=json", "wstoken=" & token.ToString & "&wsfunction=core_enrol_get_users_courses&userid=29466")
+        Dim coursesj As String = DoPost(TextBox1.Text & "/webservice/rest/server.php?moodlewsrestformat=json", "wstoken=" & token.ToString & "&wsfunction=core_enrol_get_users_courses&userid=" & userid.ToString)
         For Each i In New JavaScriptSerializer().Deserialize(Of course())(coursesj)
             courses.Add(i)
         Next
@@ -117,6 +118,7 @@ Public Class Form1
         For Each q In quizes
             Dim i As New ListViewItem
             i.Text = q.name
+            i.Tag = q.courseid
             If q.grade = "No Attempt" Then
                 i.SubItems.Add("No Attempt")
             ElseIf q.grade = "Error" Then
